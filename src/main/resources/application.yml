@@ -1,34 +1,38 @@
 server:
   port: 8070
 spring:
+  output:
+    ansi:
+      enabled: always
   profiles:
     active: dev
     include: secret
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
   datasource:
     url: jdbc:h2:./db_dev;MODE=MySQL
     username: sa
     password:
     driver-class-name: org.h2.Driver
-    #    url: jdbc:postgresql://localhost:5432/surl_dev
-    #    username: postgres
-    #    password: 12341234
-    #    driver-class-name: org.postgresql.Driver
-    jpa:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
       hibernate:
-        ddl-auto: update
-      properties:
-        hibernate:
-          default_batch_fetch_size: 100
-          format_sql: true
-          highlight_sql: true
-          use_sql_comments: true
-    logging:
-      level:
-        com.koreait.surl_project_11: DEBUG
-        org.hibernate.SQL: DEBUG
-        org.hibernate.orm.jdbc.bind: TRACE
-        org.hibernate.orm.jdbc.extract: TRACE
-        org.springframework.transaction.interceptor: TRACE
-        custom:
-          site:
-            name: "My Site"
+        default_batch_fetch_size: 100
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+logging:
+  level:
+    com.koreait.surl_project_11: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.transaction.interceptor: TRACE
+custom:
+  site:
+    name: "My Site"
