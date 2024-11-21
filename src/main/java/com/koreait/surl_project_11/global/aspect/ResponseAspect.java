@@ -29,8 +29,7 @@ public class ResponseAspect {
                     ||
                     @annotation(org.springframework.web.bind.annotation.DeleteMapping)
                 )
-            )
-            ||
+            )||
             @annotation(org.springframework.web.bind.annotation.ResponseBody)
             """)
     public Object handleResponse(ProceedingJoinPoint joinPoint) throws Throwable {
