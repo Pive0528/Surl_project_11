@@ -1,9 +1,13 @@
-package com.koreait.surl_project_11.domain.member.member.controller;
+package com.koreait.surl_project_11.domain.surl.surl.controller;
 
-import com.koreait.surl_project_11.domain.member.member.dto.MemberDto;
 import com.koreait.surl_project_11.domain.member.member.entity.Member;
-import com.koreait.surl_project_11.domain.member.member.service.MemberService;
+import com.koreait.surl_project_11.domain.surl.surl.dto.SurlDto;
+import com.koreait.surl_project_11.domain.surl.surl.entity.Surl;
+import com.koreait.surl_project_11.domain.surl.surl.service.SurlService;
+import com.koreait.surl_project_11.global.exceptions.GlobalException;
+import com.koreait.surl_project_11.global.rq.Rq;
 import com.koreait.surl_project_11.global.rsData.RsData;
+import com.koreait.surl_project_11.standard.dto.Empty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -11,51 +15,109 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/members")
+@RequestMapping("/api/v1/surls")
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class ApiV1MemberController {
-    private final MemberService memberService;
+public class ApiV1SurlController {
+
+    private final Rq rq;
+    private final SurlService surlService;
 
     @AllArgsConstructor
     @Getter
-    public static class MemberJoinReqBody {
+    public static class SurlAddReqBody {
         @NotBlank
-        private String username;
+        private String body;
         @NotBlank
-        private String password;
-        @NotBlank
-        private String nickname;
+        private String url;
     }
 
     @AllArgsConstructor
     @Getter
-    public static class MemberJoinRespBody {
-        MemberDto item;
+    public static class SurlAddRespBody {
+        private SurlDto item;
     }
 
-    // POST /api/v1/members
     @PostMapping("")
+    @ResponseBody
     @Transactional
-    public RsData<MemberJoinRespBody> join(
-            @RequestBody @Valid MemberJoinReqBody requestBody
+    public RsData<SurlAddRespBody> add(
+            @RequestBody @Valid SurlAddReqBody reqBody
     ) {
-        RsData<Member> joinRs = memberService.join(requestBody.username, requestBody.password, requestBody.nickname);
+        Member member = rq.getMember(); // 현재 브라우저로 로그인 한 회원 정보
 
-        return joinRs.newDataOf(
-                new MemberJoinRespBody(
-                        new MemberDto(
-                                joinRs.getData()
-                        )
+        RsData<Surl> addRs = surlService.add(member, reqBody.body, reqBody.url);
+
+        return addRs.newDataOf(
+                new SurlAddRespBody(
+                        new SurlDto(addRs.getData())
                 )
         );
+    }
+
+    @AllArgsConstructor
+    @Getter
+    public static class SurlGetRespBody {
+        private SurlDto item;
+    }
+
+    // /api/v1/surls/{id}
+    // /api/v1/surls/1
+    // /api/v1/surls?id=1
+    @GetMapping("/{id}")
+    public RsData<SurlGetRespBody> get(
+            @PathVariable long id
+    ) {
+        Surl surl = surlService.findById(id).orElseThrow(GlobalException.E404::new);
+
+        return RsData.of(
+                new SurlGetRespBody(
+                        new SurlDto(surl)
+                )
+        );
+    }
+
+    @AllArgsConstructor
+    @Getter
+    public static class SurlGetItemsRespBody {
+        private List<SurlDto> items;
+    }
+
+    @GetMapping("")
+    public RsData<SurlGetItemsRespBody> getItems() {
+        Member member = rq.getMember();
+
+        List<Surl> surls = surlService.findByAuthorOrderByIdDesc(member);
+
+        // Page
+        // QueryDSL
+
+        return RsData.of(
+                new SurlGetItemsRespBody(
+                        surls.stream()
+                                .map(SurlDto::new)
+                                .toList()
+                )
+        );
+    }
+
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public RsData<Empty> delete(
+            @PathVariable long id
+    ) {
+        Surl surl = surlService.findById(id).orElseThrow(GlobalException.E404::new);
+
+        surlService.delete(surl);
+
+        return RsData.OK;
     }
 
 }
