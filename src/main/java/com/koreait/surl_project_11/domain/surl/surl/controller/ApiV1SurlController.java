@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/surls")
 @RequiredArgsConstructor
@@ -81,6 +83,30 @@ public class ApiV1SurlController {
         );
     }
 
+    @AllArgsConstructor
+    @Getter
+    public static class SurlGetItemsRespBody {
+        private List<SurlDto> items;
+    }
+
+    @GetMapping("")
+    public RsData<SurlGetItemsRespBody> getItems() {
+        Member member = rq.getMember();
+
+        List<Surl> surls = surlService.findByAuthorOrderByIdDesc(member);
+
+        // Page
+        // QueryDSL
+
+        return RsData.of(
+                new SurlGetItemsRespBody(
+                        surls.stream()
+                                .map(SurlDto::new)
+                                .toList()
+                )
+        );
+    }
+
 
     @DeleteMapping("/{id}")
     @Transactional
@@ -92,6 +118,38 @@ public class ApiV1SurlController {
         surlService.delete(surl);
 
         return RsData.OK;
+    }
+
+    @AllArgsConstructor
+    @Getter
+    public static class SurlModifyReqBody {
+        @NotBlank
+        private String body;
+        @NotBlank
+        private String url;
+    }
+
+    @AllArgsConstructor
+    @Getter
+    public static class SurlModifyRespBody {
+        private SurlDto item;
+    }
+
+    @PutMapping("/{id}")
+    @Transactional
+    public RsData<SurlModifyRespBody> modify(
+            @PathVariable long id,
+            @RequestBody @Valid SurlModifyReqBody reqBody
+    ) {
+        Surl surl = surlService.findById(id).orElseThrow(GlobalException.E404::new);
+
+        RsData<Surl> modifyRs = surlService.modify(surl, reqBody.body, reqBody.url);
+
+        return modifyRs.newDataOf(
+                new SurlModifyRespBody(
+                        new SurlDto(modifyRs.getData())
+                )
+        );
     }
 
 }
