@@ -1,3 +1,4 @@
+
 package com.koreait.surl_project_11.global.rq;
 
 import com.koreait.surl_project_11.domain.member.member.entity.Member;
@@ -24,9 +25,9 @@ public class Rq {
 
     public Member getMember() {
         if (member != null) return member; // 메모리 캐싱
-        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        long id = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
 
-        member = memberService.findByUsername(name).get();
+        member = memberService.findById(id).get();
 
         return member;
     }
