@@ -1,4 +1,3 @@
-
 package com.koreait.surl_project_11.global.rq;
 
 import com.koreait.surl_project_11.domain.member.member.entity.Member;

@@ -1,4 +1,3 @@
-
 package com.koreait.surl_project_11.domain.article.article.dto;
 
 import com.koreait.surl_project_11.domain.article.article.entity.Article;

@@ -1,4 +1,3 @@
-
 package com.koreait.surl_project_11.domain.surl.surl.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
